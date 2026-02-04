@@ -17,20 +17,32 @@
     overflow: hidden;
   }
 
-  button {
-    border: none;
+  /* ---- RESET BUTTON ---- */
+  .reset {
+    position: fixed;
+    top: 14px;
+    right: 14px;
+    z-index: 999;
+    font-size: 13px;
+    padding: 8px 14px;
     border-radius: 999px;
-    padding: 14px 26px;
-    font-size: 16px;
-    background: #d6a75c;
-    color: white;
+    background: #e6cfa7;
+    color: #4a3b2a;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    cursor: pointer;
   }
 
+  .reset:active {
+    transform: scale(0.95);
+  }
+
+  /* ---- SCREENS ---- */
   .screen {
     position: absolute;
     inset: 0;
     display: none;
-    padding: 20px;
+    padding: 24px;
   }
 
   .screen.active {
@@ -42,27 +54,22 @@
 
   .title {
     font-size: 24px;
-    margin-bottom: 24px;
+    margin-bottom: 28px;
   }
 
-  .reset {
-    position: absolute;
-    top: 12px;
-    right: 12px;
-    font-size: 12px;
-    background: transparent;
-    color: #a78b6d;
+  button.main {
+    border: none;
+    border-radius: 999px;
+    padding: 16px 30px;
+    font-size: 17px;
+    background: #d6a75c;
+    color: white;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   }
 
   svg {
-    width: 220px;
+    width: 260px;
     height: auto;
-  }
-
-  .reveal img {
-    width: 200px;
-    filter: blur(20px);
-    transition: filter 1s;
   }
 </style>
 </head>
@@ -71,154 +78,109 @@
 
 <button class="reset" onclick="resetGame()">Ricomincia</button>
 
-<!-- START -->
+<!-- START SCREEN -->
 <div id="start" class="screen active">
   <div class="title">☕ Qualcosa sta per essere preparato…</div>
-  <button onclick="startGame()">Inizia</button>
+  <button class="main" onclick="startGame()">Inizia</button>
 </div>
 
 <!-- LEVEL 1 -->
 <div id="level1" class="screen">
-  <svg viewBox="0 0 200 320">
+
+  <svg viewBox="0 0 200 260">
 
     <!-- BASE -->
-    <path d="M50 220 L150 220 L135 300 L65 300 Z"
-          fill="#e6e6e6" stroke="#555" stroke-width="2"/>
+    <path d="M50 140 L150 140 L135 240 L65 240 Z"
+          fill="none" stroke="#333" stroke-width="3"/>
 
-    <!-- ACQUA -->
+    <!-- WATER -->
     <rect id="water"
-          x="70" y="300" width="60" height="0"
-          fill="#9bd0f5"/>
+          x="65" y="240" width="70" height="0"
+          fill="#b7def3"/>
 
-    <!-- TUBO -->
-    <rect x="95" y="180" width="10" height="80"
-          fill="#666"/>
+    <!-- UPPER PART (REFERENCE ONLY) -->
+    <path d="M60 40 L140 40 L155 140 L45 140 Z"
+          fill="none" stroke="#333" stroke-width="3"/>
 
-    <!-- FILTRO -->
-    <polygon points="70,180 130,180 110,200 90,200"
-             fill="#6b4a2b"/>
+    <!-- LEVEL LINE -->
+    <line x1="65" y1="175" x2="135" y2="175"
+          stroke="#999" stroke-dasharray="5"/>
 
-    <!-- CAMERA SUPERIORE -->
-    <path d="M60 40 L140 40 L160 180 L40 180 Z"
-          fill="#f4f4f4" stroke="#555" stroke-width="2"/>
   </svg>
-</div>
 
-<!-- LEVEL 2 -->
-<div id="level2" class="screen">
-  <svg viewBox="0 0 200 320">
-
-    <!-- BASE -->
-    <path d="M50 220 L150 220 L135 300 L65 300 Z"
-          fill="#e6e6e6" stroke="#555" stroke-width="2"/>
-
-    <!-- TUBO -->
-    <rect x="95" y="180" width="10" height="80"
-          fill="#666"/>
-
-    <!-- FILTRO -->
-    <polygon points="70,180 130,180 110,200 90,200"
-             fill="#6b4a2b"/>
-
-    <!-- CAFFÈ POLVERE -->
-    <rect id="coffeePowder"
-          x="75" y="200" width="50" height="0"
-          fill="#8b5a2b"/>
-
-    <!-- CAMERA SUPERIORE -->
-    <path d="M60 40 L140 40 L160 180 L40 180 Z"
-          fill="#f4f4f4" stroke="#555" stroke-width="2"/>
-  </svg>
-</div>
-
-<!-- REVEAL -->
-<div id="reveal" class="screen reveal">
-  <img src="nanopresso.png" alt="Nanopresso">
-  <div style="margin-top:20px;">Qualcosa prende forma…</div>
-  <button style="margin-top:20px;">Continua</button>
 </div>
 
 <script>
+/* ===============================
+   GLOBAL STATE
+=============================== */
 let level = parseInt(localStorage.getItem("mokaLevel")) || 0;
 
-/* ---------------- UTIL ---------------- */
-function show(id) {
-  document.querySelectorAll(".screen").forEach(s => s.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+/* ===============================
+   UTILITIES
+=============================== */
+function show(screenId) {
+  document.querySelectorAll(".screen")
+    .forEach(s => s.classList.remove("active"));
+  document.getElementById(screenId).classList.add("active");
 }
 
 function resetGame() {
   localStorage.clear();
-  location.href = location.pathname;
+  show("start");
+  resetLevel1();
 }
 
+/* ===============================
+   START
+=============================== */
 function startGame() {
   localStorage.setItem("mokaLevel", 1);
   show("level1");
 }
 
-/* ---------------- LEVEL 1 – ACQUA ---------------- */
-let water = document.getElementById("water");
+/* ===============================
+   LEVEL 1 – TAP TO FILL WATER
+=============================== */
+const water = document.getElementById("water");
 let waterHeight = 0;
-let fillingInterval;
 
-function startWater() {
-  fillingInterval = setInterval(() => {
-    if (waterHeight < 80) {
-      waterHeight += 1.5;
-      water.setAttribute("y", 300 - waterHeight);
-      water.setAttribute("height", waterHeight);
-    }
-  }, 16);
+function resetLevel1() {
+  waterHeight = 0;
+  water.setAttribute("height", 0);
+  water.setAttribute("y", 240);
 }
 
-function stopWater() {
-  clearInterval(fillingInterval);
+function tapWater() {
+  if (waterHeight >= 90) return;
 
-  if (waterHeight > 45 && waterHeight < 65) {
-    localStorage.setItem("mokaLevel", 2);
-    setTimeout(() => show("level2"), 400);
+  waterHeight += 6;
+  water.setAttribute("height", waterHeight);
+  water.setAttribute("y", 240 - waterHeight);
+
+  // SUCCESS ZONE
+  if (waterHeight >= 55 && waterHeight <= 70) {
+    setTimeout(() => {
+      localStorage.setItem("mokaLevel", 2);
+      alert("Perfetto ☕"); // placeholder feedback
+      resetLevel1();
+      show("start"); // per ora torniamo allo start
+    }, 300);
   }
 }
 
-const lvl1 = document.getElementById("level1");
-lvl1.addEventListener("touchstart", startWater);
-lvl1.addEventListener("touchend", stopWater);
+const level1Screen = document.getElementById("level1");
+level1Screen.addEventListener("touchstart", tapWater);
+level1Screen.addEventListener("click", tapWater);
 
-/* ---------------- LEVEL 2 – CAFFÈ ---------------- */
-let coffee = document.getElementById("coffeePowder");
-let coffeeHeight = 0;
-let lastX = null;
-
-function onMove(e) {
-  const x = e.touches[0].clientX;
-  if (lastX !== null) {
-    const delta = Math.abs(x - lastX);
-    if (delta > 15 && coffeeHeight < 60) {
-      coffeeHeight += 2;
-      coffee.setAttribute("y", 200 - coffeeHeight);
-      coffee.setAttribute("height", coffeeHeight);
-    }
-    if (coffeeHeight >= 50) {
-      localStorage.setItem("mokaLevel", 3);
-      setTimeout(() => show("reveal"), 500);
-    }
-  }
-  lastX = x;
+/* ===============================
+   RESUME LOGIC
+=============================== */
+if (level === 1) {
+  show("level1");
+} else {
+  show("start");
 }
-
-function resetMove() {
-  lastX = null;
-}
-
-const lvl2 = document.getElementById("level2");
-lvl2.addEventListener("touchmove", onMove);
-lvl2.addEventListener("touchend", resetMove);
-
-/* ---------------- RESUME ---------------- */
-if (level === 1) show("level1");
-else if (level === 2) show("level2");
-else show("start");
 </script>
 
 </body>
