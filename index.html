@@ -1,187 +1,861 @@
 <!DOCTYPE html>
-<html lang="it">
+<html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Qualcosa sta per essere preparato ☕</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>The Espresso Quest - A Birthday Adventure</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-<style>
-  * { box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #3e2723 0%, #5d4037 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
 
-  body {
-    margin: 0;
-    background: #fff6ec;
-    font-family: system-ui, -apple-system, sans-serif;
-    color: #4a3b2a;
-    text-align: center;
-    overflow: hidden;
-  }
+        #game-container {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            max-height: 800px;
+            background: white;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            border-radius: 15px;
+            display: flex;
+            flex-direction: column;
+        }
 
-  /* ---- RESET BUTTON ---- */
-  .reset {
-    position: fixed;
-    top: 14px;
-    right: 14px;
-    z-index: 999;
-    font-size: 13px;
-    padding: 8px 14px;
-    border-radius: 999px;
-    background: #e6cfa7;
-    color: #4a3b2a;
-    border: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-    cursor: pointer;
-  }
+        /* Gift Image Background */
+        #reward-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            background-size: contain;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-image: linear-gradient(rgba(255, 255, 255, 0.85), rgba(255, 255, 255, 0.85)), url('nanopresso.jpg');
+            transition: filter 1s ease;
+            filter: blur(35px);
+        }
 
-  .reset:active {
-    transform: scale(0.95);
-  }
+        /* Main UI Layer */
+        #ui-layer {
+            position: relative;
+            z-index: 5;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 30px 20px;
+        }
 
-  /* ---- SCREENS ---- */
-  .screen {
-    position: absolute;
-    inset: 0;
-    display: none;
-    padding: 24px;
-  }
+        /* Header Section */
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
 
-  .screen.active {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-  }
+        .header h1 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
 
-  .title {
-    font-size: 24px;
-    margin-bottom: 28px;
-  }
+        .header p {
+            font-size: 1rem;
+            color: #666;
+            font-weight: 500;
+        }
 
-  button.main {
-    border: none;
-    border-radius: 999px;
-    padding: 16px 30px;
-    font-size: 17px;
-    background: #d6a75c;
-    color: white;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  }
+        /* Game Area */
+        #game-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            min-height: 300px;
+            margin: 20px 0;
+        }
 
-  svg {
-    width: 260px;
-    height: auto;
-  }
-</style>
+        #game-svg {
+            width: 85%;
+            height: auto;
+            max-height: 280px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+        }
+
+        /* Progress Section */
+        .progress-section {
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .progress-label {
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #d4a373, #e8b88a);
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+
+        /* Buttons */
+        .button-section {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 28px;
+            background: #333;
+            border: none;
+            border-radius: 25px;
+            color: white;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn:hover {
+            background: #555;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .reset-btn {
+            padding: 8px 16px;
+            background: rgba(0, 0, 0, 0.05);
+            color: #888;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            border: 1px solid #ddd;
+            font-size: 0.85rem;
+            flex: 1;
+        }
+
+        .reset-btn:hover {
+            background: rgba(0, 0, 0, 0.08);
+            color: #666;
+        }
+
+        /* Overlay Screens */
+        #overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            text-align: center;
+            backdrop-filter: blur(2px);
+        }
+
+        #overlay.hidden {
+            display: none;
+        }
+
+        .overlay-content h2 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .overlay-content p {
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Victory Screen */
+        #victory-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 200;
+            background: white;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 20px;
+        }
+
+        #victory-screen.show {
+            display: flex;
+        }
+
+        #victory-image {
+            width: 90%;
+            height: auto;
+            max-height: 70%;
+            object-fit: contain;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        #victory-text {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #victory-text h1 {
+            font-size: 2rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        #victory-text p {
+            font-size: 1rem;
+            color: #666;
+        }
+
+        /* Confetti */
+        .confetti {
+            position: fixed;
+            pointer-events: none;
+            z-index: 150;
+            font-size: 2rem;
+            animation: confetti-fall 3s ease-out forwards;
+        }
+
+        @keyframes confetti-fall {
+            to {
+                transform: translateY(100vh) rotate(720deg);
+                opacity: 0;
+            }
+        }
+
+        @media (max-height: 700px) {
+            #ui-layer {
+                padding: 15px 10px;
+            }
+
+            .header h1 {
+                font-size: 1.1rem;
+            }
+
+            .header p {
+                font-size: 0.9rem;
+            }
+
+            #game-svg {
+                max-height: 200px;
+            }
+
+            #game-area {
+                min-height: 200px;
+                margin: 10px 0;
+            }
+        }
+    </style>
 </head>
-
 <body>
+    <div id="game-container">
+        <!-- Gift Image Background -->
+        <div id="reward-bg"></div>
 
-<button class="reset" onclick="resetGame()">Ricomincia</button>
+        <!-- Victory Screen -->
+        <div id="victory-screen">
+            <div id="victory-text">
+                <h1>🎉 Perfectly Brewed! ☕</h1>
+                <p>You've mastered the art of espresso!</p>
+            </div>
+            <img id="victory-image" src="nanopresso.jpg" alt="Your gift!">
+            <div style="display: flex; gap: 10px; width: 90%; max-width: 300px;">
+                <button class="btn" onclick="watchYouTube()" style="flex: 1;">WATCH THE VIDEO</button>
+                <button class="btn" onclick="resetGame()" style="flex: 1;">PLAY AGAIN</button>
+            </div>
+        </div>
 
-<!-- START SCREEN -->
-<div id="start" class="screen active">
-  <div class="title">☕ Qualcosa sta per essere preparato…</div>
-  <button class="main" onclick="startGame()">Inizia</button>
-</div>
+        <!-- Main UI Layer -->
+        <div id="ui-layer">
+            <div class="header">
+                <h1 id="level-title">The Espresso Quest</h1>
+                <p id="level-instruction"></p>
+            </div>
 
-<!-- LEVEL 1 -->
-<div id="level1" class="screen">
+            <div id="game-area">
+                <svg viewBox="0 0 200 200" id="game-svg" preserveAspectRatio="xMidYMid meet"></svg>
+            </div>
 
-  <svg viewBox="0 0 200 260">
+            <div class="progress-section">
+                <div class="progress-label" id="progress-label">Ready to begin</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
 
-    <!-- BASE -->
-    <path d="M50 140 L150 140 L135 240 L65 240 Z"
-          fill="none" stroke="#333" stroke-width="3"/>
+            <div class="button-section">
+                <button class="btn" id="main-btn" onclick="handleMainButton()" style="flex: 1;">START QUEST</button>
+                <button class="reset-btn" onclick="resetGame()">RESET</button>
+            </div>
+        </div>
 
-    <!-- WATER -->
-    <rect id="water"
-          x="65" y="240" width="70" height="0"
-          fill="#b7def3"/>
+        <!-- Overlay for transitions -->
+        <div id="overlay" class="hidden">
+            <div class="overlay-content">
+                <h2 id="overlay-title"></h2>
+                <p id="overlay-subtitle"></p>
+                <button class="btn" id="continue-btn" onclick="continueToNextLevel()">CONTINUE</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- UPPER PART (REFERENCE ONLY) -->
-    <path d="M60 40 L140 40 L155 140 L45 140 Z"
-          fill="none" stroke="#333" stroke-width="3"/>
+    <script>
+        // Game State
+        const gameState = {
+            currentLevel: parseInt(localStorage.getItem('espresso_level')) || 0,
+            progress: 0,
+            isTransitioning: true,
+            canInteract: false
+        };
 
-    <!-- LEVEL LINE -->
-    <line x1="65" y1="175" x2="135" y2="175"
-          stroke="#999" stroke-dasharray="5"/>
+        // Level 5 handler references for cleanup
+        let level5Handlers = {
+            mouseDown: null,
+            mouseMove: null,
+            mouseUp: null
+        };
 
-  </svg>
+        // Configuration
+        const config = {
+            levels: 5,
+            blurSteps: [35, 25, 18, 12, 6, 0],
+            levelNames: ['', 'The Base', 'The Coffee', 'Assembly', 'Extraction', 'The Pour'],
+            instructions: [
+                '',
+                'Fill the base with water',
+                'Fill the funnel with coffee powder',
+                'Screw the moka closed',
+                'Heat up the moka',
+                'Pour the coffee in a cup'
+            ]
+        };
 
-</div>
+        // DOM Elements
+        const elements = {
+            container: document.getElementById('game-container'),
+            uiLayer: document.getElementById('ui-layer'),
+            overlay: document.getElementById('overlay'),
+            victoryScreen: document.getElementById('victory-screen'),
+            rewardBg: document.getElementById('reward-bg'),
+            gameArea: document.getElementById('game-area'),
+            svg: document.getElementById('game-svg'),
+            levelTitle: document.getElementById('level-title'),
+            levelInstruction: document.getElementById('level-instruction'),
+            mainBtn: document.getElementById('main-btn'),
+            resetBtn: document.querySelector('.reset-btn'),
+            continueBtn: document.getElementById('continue-btn'),
+            progressFill: document.getElementById('progress-fill'),
+            progressLabel: document.getElementById('progress-label')
+        };
 
-<script>
-/* ===============================
-   GLOBAL STATE
-=============================== */
-let level = parseInt(localStorage.getItem("mokaLevel")) || 0;
+        // Initialize game
+        function initGame() {
+            elements.rewardBg.style.display = 'none';
+            updateBlur();
+            showTransitionScreen();
+        }
 
-/* ===============================
-   UTILITIES
-=============================== */
-function show(screenId) {
-  document.querySelectorAll(".screen")
-    .forEach(s => s.classList.remove("active"));
-  document.getElementById(screenId).classList.add("active");
-}
+        // Update blur effect
+        function updateBlur() {
+            const blurAmount = config.blurSteps[gameState.currentLevel] || 0;
+            elements.rewardBg.style.filter = `blur(${blurAmount}px)`;
+        }
 
-function resetGame() {
-  localStorage.clear();
-  show("start");
-  resetLevel1();
-}
+        // Show transition screen
+        function showTransitionScreen() {
+            if (gameState.currentLevel === config.levels) {
+                elements.overlay.classList.add('hidden');
+                elements.uiLayer.style.display = 'flex';
+                showVictoryScreen();
+                return;
+            }
 
-/* ===============================
-   START
-=============================== */
-function startGame() {
-  localStorage.setItem("mokaLevel", 1);
-  show("level1");
-}
+            // Hide the game UI and show the transition overlay with background
+            elements.uiLayer.style.display = 'none';
+            elements.overlay.classList.remove('hidden');
 
-/* ===============================
-   LEVEL 1 – TAP TO FILL WATER
-=============================== */
-const water = document.getElementById("water");
-let waterHeight = 0;
+            if (gameState.currentLevel === 0) {
+                document.getElementById('overlay-title').innerText = '🎁 The Espresso Quest';
+                document.getElementById('overlay-subtitle').innerText = 'A birthday adventure to master the perfect brew';
+                document.getElementById('continue-btn').innerText = 'START QUEST';
+                elements.mainBtn.style.display = 'none';
+                elements.resetBtn.style.display = 'block';
+            } else if (gameState.currentLevel < config.levels) {
+                const blurAmount = config.blurSteps[gameState.currentLevel];
+                document.getElementById('overlay-title').innerText = `✓ Level ${gameState.currentLevel} Complete!`;
+                const progress = Math.round((gameState.currentLevel / config.levels) * 100);
+                document.getElementById('overlay-subtitle').innerText = `${progress}% of the way there\n\nReady for the next step?`;
+                document.getElementById('continue-btn').innerText = 'CONTINUE';
 
-function resetLevel1() {
-  waterHeight = 0;
-  water.setAttribute("height", 0);
-  water.setAttribute("y", 240);
-}
+                elements.rewardBg.style.display = 'block';
+                elements.rewardBg.style.filter = `blur(${blurAmount}px)`;
+                elements.mainBtn.style.display = 'none';
+                elements.resetBtn.style.display = 'block';
+            }
 
-function tapWater() {
-  if (waterHeight >= 90) return;
+            updateUI();
+        }
 
-  waterHeight += 6;
-  water.setAttribute("height", waterHeight);
-  water.setAttribute("y", 240 - waterHeight);
+        // Continue to next level
+        function continueToNextLevel() {
+            if (gameState.currentLevel === 0) {
+                gameState.currentLevel = 1;
+            } else if (gameState.currentLevel < config.levels) {
+                gameState.currentLevel++;
+            }
 
-  // SUCCESS ZONE
-  if (waterHeight >= 55 && waterHeight <= 70) {
-    setTimeout(() => {
-      localStorage.setItem("mokaLevel", 2);
-      alert("Perfetto ☕"); // placeholder feedback
-      resetLevel1();
-      show("start"); // per ora torniamo allo start
-    }, 300);
-  }
-}
+            if (gameState.currentLevel > config.levels) {
+                showVictoryScreen();
+            } else {
+                startLevel();
+            }
+        }
 
-const level1Screen = document.getElementById("level1");
-level1Screen.addEventListener("touchstart", tapWater);
-level1Screen.addEventListener("click", tapWater);
+        // Handle main button click
+        function handleMainButton() {
+            if (gameState.isTransitioning) {
+                continueToNextLevel();
+            }
+        }
 
-/* ===============================
-   RESUME LOGIC
-=============================== */
-if (level === 1) {
-  show("level1");
-} else {
-  show("start");
-}
-</script>
+        // Start current level
+        function startLevel() {
+            gameState.isTransitioning = false;
+            gameState.progress = 0;
+            gameState.canInteract = true;
+            elements.overlay.classList.add('hidden');
+            elements.uiLayer.style.display = 'flex';
+            elements.svg.innerHTML = '';
+            
+            // Hide background image and show white background during gameplay
+            elements.rewardBg.style.display = 'none';
+            
+            // Hide main button and show reset button during gameplay
+            elements.mainBtn.style.display = 'none';
+            elements.resetBtn.style.display = 'block';
+            
+            updateUI();
 
+            // Clear old event listeners
+            document.onmousemove = null;
+            document.ontouchmove = null;
+            document.onmousedown = null;
+            document.ontouchstart = null;
+            document.onmouseup = null;
+            document.ontouchend = null;
+
+            if (gameState.currentLevel === 1) setupLevel1();
+            else if (gameState.currentLevel === 2) setupLevel2();
+            else if (gameState.currentLevel === 3) setupLevel3();
+            else if (gameState.currentLevel === 4) setupLevel4();
+            else if (gameState.currentLevel === 5) setupLevel5();
+        }
+
+        // Update UI
+        function updateUI() {
+            elements.levelTitle.innerText = gameState.currentLevel > 0 
+                ? `Level ${gameState.currentLevel}: ${config.levelNames[gameState.currentLevel]}`
+                : '';
+            elements.levelInstruction.innerText = config.instructions[gameState.currentLevel] || '';
+            elements.progressFill.style.width = Math.min(gameState.progress * 100, 100) + '%';
+            elements.progressLabel.innerText = `Progress: ${Math.round(gameState.progress * 100)}%`;
+        }
+
+        // Level 1: Fill the base with water (TAP)
+        function setupLevel1() {
+            elements.svg.innerHTML = `
+                <g transform="translate(100,74) scale(0.1,-0.1)" fill="#000000" stroke="none">
+                    <path d="M383 1448 c-6 -18 -32 -82 -57 -143 -88 -213 -138 -463 -156 -778 l-12 -198 23 -33 c30 -45 90 -79 201 -115 116 -39 208 -56 372 -72 161 -15 522 -6 666 16 131 20 311 75 370 113 86 55 83 47 83 265 -2 412 -58 665 -210 944 -19 35 -33 42 -33 18 0 -30 -111 -69 -280 -97 -121 -20 -551 -17 -683 5 -148 25 -270 70 -259 94 2 4 0 9 -5 10 -4 2 -13 -12 -20 -29z m42 -27 c13 -22 245 -81 318 -81 15 0 27 -1 27 -3 0 -1 -4 -18 -10 -37 -16 -54 -48 -243 -65 -375 -26 -209 -35 -358 -35 -576 l-1 -211 -25 6 c-14 4 -67 15 -117 26 -149 31 -248 70 -299 118 -27 25 -28 29 -28 136 0 314 62 649 167 899 43 102 54 119 68 98z m1269 -83 c107 -224 156 -492 156 -848 0 -196 -2 -200 -103 -249 -52 -26 -238 -81 -272 -81 -6 0 -9 31 -6 81 9 209 -32 679 -85 966 -13 73 -24 135 -24 138 0 3 9 5 21 5 35 0 180 40 218 60 20 11 39 19 43 20 4 0 28 -42 52 -92z m-335 -118 c55 -300 81 -579 81 -866 l0 -201 -30 -6 c-130 -26 -597 -33 -704 -10 l-29 6 6 261 c6 259 13 360 43 571 15 108 51 315 59 345 4 13 44 15 279 15 l273 0 22 -115z"/>
+                </g>
+                <defs>
+                    <clipPath id="waterClip">
+                        <path d="M20,60 L80,60 L85,120 L15,120 Z"/>
+                    </clipPath>
+                </defs>
+                <!-- Water fill -->
+                <rect id="water" x="15" y="120" width="70" height="0" fill="#a2d2ff" clip-path="url(#waterClip)" opacity="0.8"/>
+            `;
+
+            elements.svg.onclick = (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning) return;
+                gameState.progress = Math.min(gameState.progress + 0.12, 1);
+                
+                let waterHeight = gameState.progress * 60;
+                document.getElementById('water').setAttribute('height', waterHeight);
+                document.getElementById('water').setAttribute('y', 120 - waterHeight);
+
+                updateUI();
+                
+                if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+            };
+        }
+
+        // Level 2: Fill funnel with coffee (SHAKE/MOUSE MOVEMENT)
+        function setupLevel2() {
+            elements.svg.innerHTML = `
+                <g transform="translate(100,91.5) scale(0.1,-0.1)" fill="#000000" stroke="none">
+                    <path d="M440 1569 c-148 -9 -282 -32 -317 -55 -23 -14 -23 -16 -23 -258 0 -298 -7 -281 143 -326 128 -39 214 -78 238 -109 17 -22 19 -44 19 -279 l0 -254 40 -40 c38 -39 42 -40 91 -36 40 4 58 12 82 37 l32 31 3 258 c3 249 4 258 25 280 33 36 80 57 207 91 139 38 162 47 189 72 20 19 21 29 21 269 l0 250 -24 15 c-36 24 -165 45 -346 55 -181 11 -186 11 -380 -1z m612 -44 c48 -9 95 -23 104 -30 15 -11 12 -14 -32 -28 -167 -56 -692 -61 -916 -11 -61 14 -88 28 -76 39 10 10 130 36 208 44 138 16 609 6 712 -14z m-782 -106 c52 -10 166 -14 375 -14 299 0 394 8 485 39 l40 14 0 -223 0 -224 -25 -19 c-13 -11 -77 -34 -142 -51 -139 -38 -208 -68 -245 -106 l-28 -28 0 -244 c0 -268 -4 -289 -60 -318 -43 -22 -76 -18 -112 14 l-33 29 -3 249 c-1 136 -4 258 -7 270 -9 40 -87 88 -197 122 -57 18 -122 41 -145 52 l-43 19 0 229 0 230 33 -13 c17 -8 66 -20 107 -27z"/>
+                </g>
+                <defs>
+                    <clipPath id="coffeeClip">
+                        <path d="M30,30 L70,30 L65,90 L35,90 Z"/>
+                    </clipPath>
+                </defs>
+                <!-- Coffee powder - fills from bottom up -->
+                <g clip-path="url(#coffeeClip)">
+                    <rect id="coffee-fill" x="35" y="90" width="30" height="0" fill="#5d4037" opacity="0.8"/>
+                </g>
+            `;
+
+            let lastX = 0;
+            let shakeCount = 0;
+
+            document.onmousemove = document.ontouchmove = (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning) return;
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const movement = Math.abs(clientX - lastX);
+                lastX = clientX;
+                
+                if (movement > 2) {
+                    shakeCount += movement / 50;
+                    gameState.progress = Math.min(shakeCount / 100, 1);
+                    
+                    let coffeeHeight = gameState.progress * 60;
+                    document.getElementById('coffee-fill').setAttribute('height', coffeeHeight);
+                    document.getElementById('coffee-fill').setAttribute('y', 90 - coffeeHeight);
+                    
+                    if (Math.random() > 0.6 && movement > 3) {
+                        createCoffeeParticle();
+                    }
+                    
+                    updateUI();
+                    
+                    if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+                }
+            };
+        }
+
+        // Level 3: Screw the moka closed (ROTATION)
+        function setupLevel3() {
+            elements.svg.innerHTML = `
+                <g id="top-chamber" transform="translate(0, 0) rotate(0)">
+                    <g transform="translate(145,108) scale(0.1,-0.1)" fill="#000000" stroke="none">
+                        <path d="M1420 1985 c-9 -10 -9 -15 -1 -15 6 0 11 5 11 10 0 6 12 8 28 5 22 -4 24 -4 7 4 -28 13 -31 13 -45 -4z"/>
+                        <path d="M1433 1929 c-46 -14 -49 -40 -19 -171 15 -62 35 -159 45 -215 l18 -103 -66 0 c-36 0 -178 -4 -316 -10 -137 -5 -344 -12 -460 -15 -115 -4 -218 -11 -228 -16 -30 -17 -236 -272 -242 -301 -14 -60 74 -412 197 -788 47 -143 77 -184 144 -195 21 -4 70 -13 109 -20 60 -12 74 -12 99 0 23 12 32 13 45 2 14 -10 14 -10 3 5 -11 14 -11 22 2 47 19 36 20 67 4 78 -7 4 -38 6 -68 5 -79 -4 -107 9 -130 60 -17 40 -95 479 -120 669 -13 105 -5 134 40 144 17 4 98 4 179 0 l148 -7 22 -152 c29 -197 85 -502 117 -641 20 -83 25 -134 24 -208 -1 -84 1 -97 15 -97 14 0 16 12 13 85 -2 47 -1 85 2 85 3 0 28 -9 56 -19 119 -46 219 -56 559 -55 340 0 471 12 558 54 l37 18 0 -84 c0 -49 4 -84 10 -84 6 0 10 33 10 78 0 107 16 259 53 522 l33 225 118 185 c139 217 147 226 191 234 44 9 78 36 70 57 -24 62 -291 112 -695 129 -129 5 -260 10 -291 10 l-57 0 14 78 c8 42 31 142 50 221 l36 143 -26 27 c-25 25 -31 26 -149 28 -67 1 -137 -2 -154 -8z"/>
+                    </g>
+                </g>
+            `;
+
+            let lastAngle = 0;
+            let totalRotation = 0;
+
+            document.onmousedown = document.ontouchstart = (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning) return;
+                
+                const startX = e.touches ? e.touches[0].clientX : e.clientX;
+                const startY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const moveHandler = (moveE) => {
+                    if (!gameState.canInteract || gameState.isTransitioning) return;
+                    const currentX = moveE.touches ? moveE.touches[0].clientX : moveE.clientX;
+                    const currentY = moveE.touches ? moveE.touches[0].clientY : moveE.clientY;
+                    
+                    const deltaX = currentX - startX;
+                    const deltaY = currentY - startY;
+                    const angle = Math.atan2(deltaY, deltaX) * 180 / Math.PI;
+                    
+                    if (Math.abs(angle - lastAngle) < 180) {
+                        totalRotation += Math.abs(angle - lastAngle) / 2;
+                    }
+                    lastAngle = angle;
+                    
+                    gameState.progress = Math.min(totalRotation / 360, 1);
+                    
+                    document.getElementById('top-chamber').setAttribute('transform', 
+                        `translate(100, 70) rotate(${totalRotation}) translate(-100, -70)`
+                    );
+                    
+                    updateUI();
+                    
+                    if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+                };
+                
+                const endHandler = () => {
+                    document.removeEventListener('mousemove', moveHandler);
+                    document.removeEventListener('touchmove', moveHandler);
+                    document.removeEventListener('mouseup', endHandler);
+                    document.removeEventListener('touchend', endHandler);
+                };
+                
+                document.addEventListener('mousemove', moveHandler);
+                document.addEventListener('touchmove', moveHandler);
+                document.addEventListener('mouseup', endHandler);
+                document.addEventListener('touchend', endHandler);
+            };
+        }
+
+        // Level 4: Heat up the moka (RUB/DRAG)
+        function setupLevel4() {
+            elements.svg.innerHTML = `
+                <!-- Base SVG as full moka pot -->
+                <g transform="translate(100,74) scale(0.1,-0.1)" fill="#000000" stroke="none">
+                    <path d="M383 1448 c-6 -18 -32 -82 -57 -143 -88 -213 -138 -463 -156 -778 l-12 -198 23 -33 c30 -45 90 -79 201 -115 116 -39 208 -56 372 -72 161 -15 522 -6 666 16 131 20 311 75 370 113 86 55 83 47 83 265 -2 412 -58 665 -210 944 -19 35 -33 42 -33 18 0 -30 -111 -69 -280 -97 -121 -20 -551 -17 -683 5 -148 25 -270 70 -259 94 2 4 0 9 -5 10 -4 2 -13 -12 -20 -29z m42 -27 c13 -22 245 -81 318 -81 15 0 27 -1 27 -3 0 -1 -4 -18 -10 -37 -16 -54 -48 -243 -65 -375 -26 -209 -35 -358 -35 -576 l-1 -211 -25 6 c-14 4 -67 15 -117 26 -149 31 -248 70 -299 118 -27 25 -28 29 -28 136 0 314 62 649 167 899 43 102 54 119 68 98z m1269 -83 c107 -224 156 -492 156 -848 0 -196 -2 -200 -103 -249 -52 -26 -238 -81 -272 -81 -6 0 -9 31 -6 81 9 209 -32 679 -85 966 -13 73 -24 135 -24 138 0 3 9 5 21 5 35 0 180 40 218 60 20 11 39 19 43 20 4 0 28 -42 52 -92z m-335 -118 c55 -300 81 -579 81 -866 l0 -201 -30 -6 c-130 -26 -597 -33 -704 -10 l-29 6 6 261 c6 259 13 360 43 571 15 108 51 315 59 345 4 13 44 15 279 15 l273 0 22 -115z"/>
+                </g>
+                
+                <!-- Heat glow effect -->
+                <g id="heat-glow" opacity="0">
+                    <circle cx="50" cy="85" r="30" fill="none" stroke="#ff6b6b" stroke-width="1.5" opacity="0"/>
+                    <circle cx="50" cy="85" r="40" fill="none" stroke="#ff6b6b" stroke-width="1" opacity="0"/>
+                </g>
+                
+                <!-- Steam/vapor -->
+                <g id="steam" opacity="0">
+                    <path d="M35,30 Q37,20 35,10" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M50,25 Q52,15 50,0" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M65,30 Q67,20 65,10" fill="none" stroke="#ccc" stroke-width="2" stroke-linecap="round"/>
+                </g>
+            `;
+
+            let lastX = 0;
+
+            document.onmousemove = document.ontouchmove = (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning) return;
+                
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const movement = Math.abs(clientX - lastX);
+                lastX = clientX;
+                
+                gameState.progress = Math.min(gameState.progress + (movement / 1600), 1);
+                
+                document.getElementById('heat-glow').setAttribute('opacity', gameState.progress * 0.5);
+                document.getElementById('steam').setAttribute('opacity', gameState.progress * 0.8);
+                
+                updateUI();
+                
+                if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+            };
+        }
+
+        // Level 5: Pour the coffee (DRAG)
+        function setupLevel5() {
+            elements.svg.innerHTML = `
+                <!-- Espresso cup from reference SVG -->
+                <g id="cup" transform="translate(0,0) scale(0.25)">
+                    <path fill="#000000" d="M6.8125 7C6.335938 7.089844 5.992188 7.511719 6 8C6 19.152344 11.382813 34.644531 12.59375 38L3 38C2.96875 38 2.9375 38 2.90625 38C2.511719 38.027344 2.167969 38.285156 2.035156 38.65625C1.898438 39.027344 1.996094 39.445313 2.28125 39.71875L4.5625 41.96875C6.496094 43.902344 9.136719 45 11.875 45L33.125 45C35.863281 45 38.503906 43.902344 40.4375 41.96875L42.71875 39.71875C43.015625 39.433594 43.105469 38.992188 42.945313 38.613281C42.789063 38.234375 42.410156 37.992188 42 38L32.40625 38C32.753906 37.023438 33.246094 35.628906 34.09375 32.90625C34.769531 32.777344 37.65625 32.179688 40.71875 30.8125C42.457031 30.035156 44.242188 29.042969 45.625 27.6875C47.007813 26.332031 48 24.5625 48 22.46875C48 18.910156 45.089844 16 41.53125 16C40.300781 16 39.109375 16.34375 38.09375 16.9375C38.640625 13.820313 39 10.746094 39 8C39 7.449219 38.550781 7 38 7L7 7C6.96875 7 6.9375 7 6.90625 7C6.875 7 6.84375 7 6.8125 7 Z M 8.125 9L36.875 9C36.710938 14.652344 35.179688 21.820313 33.53125 27.71875C31.898438 33.5625 30.472656 37.476563 30.28125 38L14.71875 38C14.335938 36.945313 8.453125 20.402344 8.125 9 Z M 41.53125 18C44.011719 18 46 19.988281 46 22.46875C46 23.9375 45.339844 25.148438 44.21875 26.25C43.097656 27.351563 41.507813 28.285156 39.90625 29C37.894531 29.898438 35.976563 30.449219 34.75 30.75C34.996094 29.921875 35.21875 29.148438 35.46875 28.25C36.148438 25.824219 36.828125 23.160156 37.40625 20.46875C37.410156 20.445313 37.433594 20.429688 37.4375 20.40625C38.167969 19.015625 39.800781 18 41.53125 18 Z M 5.40625 40L39.59375 40L39.03125 40.5625C37.472656 42.121094 35.332031 43 33.125 43L11.875 43C9.667969 43 7.527344 42.121094 5.96875 40.5625Z"/>
+                </g>
+                
+                <!-- Moka pot pouring -->
+                <g id="pour-moka" transform="translate(80, 50) rotate(0)">
+                    <path d="M-30,0 L30,0 L32,40 L-32,40 Z" fill="none" stroke="#333" stroke-width="1.5"/>
+                    <ellipse cx="0" cy="0" rx="30" ry="8" fill="none" stroke="#333" stroke-width="1.5"/>
+                    <ellipse cx="0" cy="40" rx="32" ry="7" fill="none" stroke="#333" stroke-width="1"/>
+                    <path d="M32,20 L45,25" fill="none" stroke="#333" stroke-width="1" stroke-linecap="round"/>
+                </g>
+                
+                <!-- Coffee stream -->
+                <path id="coffee-stream" d="M 115,90 L 110,135" fill="none" stroke="#5d4037" stroke-width="3" opacity="0"/>
+                
+                <!-- Coffee in cup -->
+                <rect id="cup-coffee" x="50" y="160" width="100" height="0" fill="#8B4513" opacity="0.7"/>
+            `;
+
+            const handleClick = (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning) return;
+                
+                // Increment progress by 0.18 per click (about 6 clicks to complete)
+                gameState.progress = Math.min(gameState.progress + 0.18, 1);
+                
+                const pourAngle = gameState.progress * 55;
+                const pourElement = document.getElementById('pour-moka');
+                if (pourElement) {
+                    pourElement.setAttribute('transform', `translate(100, 60) rotate(${pourAngle})`);
+                }
+                
+                const streamElement = document.getElementById('coffee-stream');
+                if (streamElement) {
+                    streamElement.setAttribute('opacity', Math.min(gameState.progress, 0.7));
+                }
+                
+                let coffeeHeight = gameState.progress * 35;
+                const cupElement = document.getElementById('cup-coffee');
+                if (cupElement) {
+                    cupElement.setAttribute('height', coffeeHeight);
+                    cupElement.setAttribute('y', 160 - coffeeHeight);
+                }
+                
+                updateUI();
+                
+                if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+            };
+
+            // Store handler for cleanup
+            level5Handlers = {
+                click: handleClick,
+                mouseDown: null,
+                mouseMove: null,
+                mouseUp: null
+            };
+
+            document.addEventListener('click', handleClick);
+        }
+
+        // Create falling coffee particles
+        function createCoffeeParticle() {
+            const particle = document.createElement('div');
+            particle.style.position = 'absolute';
+            particle.style.width = '6px';
+            particle.style.height = '6px';
+            particle.style.backgroundColor = '#5d4037';
+            particle.style.borderRadius = '50%';
+            particle.style.pointerEvents = 'none';
+            particle.style.left = (Math.random() * 40 + 220) + 'px';
+            particle.style.top = '130px';
+            particle.style.zIndex = '5';
+            elements.gameArea.appendChild(particle);
+            
+            let y = 130;
+            let vx = (Math.random() - 0.5) * 2;
+            let vy = Math.random() * 2 + 2;
+            
+            const animate = setInterval(() => {
+                y += vy;
+                particle.style.top = y + 'px';
+                particle.style.left = (parseInt(particle.style.left) + vx) + 'px';
+                
+                if (y > 400) {
+                    clearInterval(animate);
+                    particle.remove();
+                }
+            }, 30);
+        }
+
+        // Complete current level
+        function completeLevel() {
+            gameState.isTransitioning = true;
+            gameState.canInteract = false;
+            localStorage.setItem('espresso_level', gameState.currentLevel);
+            updateBlur();
+            
+            document.onmousemove = null;
+            document.ontouchmove = null;
+            document.onmousedown = null;
+            document.ontouchstart = null;
+            
+            // Clean up Level 5 event listeners
+            if (level5Handlers.click) {
+                document.removeEventListener('click', level5Handlers.click);
+            }
+            if (level5Handlers.mouseDown) {
+                document.removeEventListener('mousedown', level5Handlers.mouseDown);
+                document.removeEventListener('touchstart', level5Handlers.mouseDown);
+            }
+            if (level5Handlers.mouseMove) {
+                document.removeEventListener('mousemove', level5Handlers.mouseMove);
+                document.removeEventListener('touchmove', level5Handlers.mouseMove);
+            }
+            if (level5Handlers.mouseUp) {
+                document.removeEventListener('mouseup', level5Handlers.mouseUp);
+                document.removeEventListener('touchend', level5Handlers.mouseUp);
+            }
+            
+            setTimeout(() => {
+                showTransitionScreen();
+            }, 500);
+        }
+
+        // Show victory screen
+        function showVictoryScreen() {
+            elements.victoryScreen.classList.add('show');
+            elements.rewardBg.style.filter = 'blur(0px)';
+            elements.mainBtn.style.display = 'block';
+            elements.resetBtn.style.display = 'block';
+            spawnConfetti();
+        }
+
+        // Watch YouTube video
+        function watchYouTube() {
+            window.open('https://www.youtube.com/watch?v=lY5Pt957RhE&feature=youtu.be', '_blank');
+        }
+
+        // Spawn confetti
+        function spawnConfetti() {
+            const confettiPieces = ['🎉', '☕', '🎁', '✨', '🎊'];
+            for (let i = 0; i < 30; i++) {
+                const confetti = document.createElement('div');
+                confetti.className = 'confetti';
+                confetti.innerText = confettiPieces[Math.floor(Math.random() * confettiPieces.length)];
+                confetti.style.left = Math.random() * 100 + '%';
+                confetti.style.animationDelay = Math.random() * 0.5 + 's';
+                document.body.appendChild(confetti);
+                
+                setTimeout(() => confetti.remove(), 3000);
+            }
+        }
+
+        // Reset game
+        function resetGame() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        // Start the game
+        initGame();
+    </script>
 </body>
 </html>
