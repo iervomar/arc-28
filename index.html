@@ -17,23 +17,33 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
+            height: 100dvh; /* Changed from min-height: 100vh to height: 100dvh */
+            width: 100%;
             overflow: hidden;
             touch-action: none;
+            margin: 0;
         }
 
         #game-container {
             position: relative;
             width: 100%;
             max-width: 500px;
-            height: 100vh;
-            max-height: 800px;
+            height: 100%; /* Fill the body height */
+            max-height: 100dvh; /* Ensure it respects dynamic viewport */
             background: white;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             border-radius: 15px;
             display: flex;
             flex-direction: column;
+        }
+
+        /* Add this to ensure full screen on mobile without rounded corners cutting off content */
+        @media (max-width: 500px) {
+            #game-container {
+                border-radius: 0;
+                height: 100dvh;
+            }
         }
 
         /* Gift Image Background */
