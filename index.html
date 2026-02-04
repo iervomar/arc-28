@@ -578,7 +578,7 @@
                 
                 // Detect shake (threshold around 15-20)
                 if (magnitude > 15) {
-                    shakeCount += (magnitude - 15) / 25;
+                    shakeCount += (magnitude - 15) / 20;
                     gameState.progress = Math.min(shakeCount / 100, 1);
                     
                     // Rise from bottom
@@ -837,7 +837,7 @@
                 
                 // Only respond to vertical movement (deltaY > deltaX and significant movement)
                 if (deltaY > deltaX && deltaY > 2) {
-                    gameState.progress = Math.min(gameState.progress + (deltaY / 2500), 1);
+                    gameState.progress = Math.min(gameState.progress + (deltaY / 5000), 1);
                     
                     const maxHeight = 150;
                     const coffeeRect = document.getElementById('coffee-rise');
@@ -934,7 +934,7 @@
             particle.style.backgroundColor = '#5d4037';
             particle.style.borderRadius = '50%';
             particle.style.pointerEvents = 'none';
-            particle.style.left = (Math.random() * 50 + 220) + 'px';
+            particle.style.left = (Math.random() * 50 + 190) + 'px';
             particle.style.top = '90px';
             particle.style.zIndex = '5';
             elements.gameArea.appendChild(particle);
