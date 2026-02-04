@@ -562,13 +562,11 @@
 
             let lastX = 0;
             let shakeCount = 0;
-            let deviceMotionActive = false;
 
-            // Shake detection for mobile
+            // Shake detection for mobile only
             window.addEventListener('devicemotion', (e) => {
                 if (!gameState.canInteract || gameState.isTransitioning) return;
                 
-                deviceMotionActive = true;
                 const acceleration = e.accelerationIncludingGravity;
                 const x = acceleration.x || 0;
                 const y = acceleration.y || 0;
@@ -599,36 +597,6 @@
                     if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
                 }
             }, true);
-
-            // Mouse/touch fallback for desktop
-            document.onmousemove = document.ontouchmove = (e) => {
-                if (!gameState.canInteract || gameState.isTransitioning || deviceMotionActive) return;
-                
-                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const movement = Math.abs(clientX - lastX);
-                lastX = clientX;
-                
-                if (movement > 2) {
-                    shakeCount += movement / 50;
-                    gameState.progress = Math.min(shakeCount / 100, 1);
-                    
-                    // Rise from bottom: calculate height and y position
-                    const maxHeight = 60;
-                    const coffeeHeight = gameState.progress * maxHeight;
-                    const coffeeY = 80 - coffeeHeight;
-                    
-                    document.getElementById('coffee').setAttribute('height', coffeeHeight);
-                    document.getElementById('coffee').setAttribute('y', coffeeY);
-                    
-                    if (Math.random() > 0.6 && movement > 3) {
-                        createCoffeeParticle();
-                    }
-                    
-                    updateUI();
-                    
-                    if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
-                }
-            };
         }
 
         // Level 3: Screw the moka closed (HORIZONTAL SWIPE-BASED MIRRORING)
@@ -855,25 +823,34 @@
             `;
 
             let lastX = 0;
+            let lastY = 0;
 
             document.onmousemove = document.ontouchmove = (e) => {
                 if (!gameState.canInteract || gameState.isTransitioning) return;
                 
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-                const movement = Math.abs(clientX - lastX);
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                
+                const deltaX = Math.abs(clientX - lastX);
+                const deltaY = Math.abs(clientY - lastY);
+                
+                // Only respond to vertical movement (deltaY > deltaX and significant movement)
+                if (deltaY > deltaX && deltaY > 2) {
+                    gameState.progress = Math.min(gameState.progress + (deltaY / 2500), 1);
+                    
+                    const maxHeight = 150;
+                    const coffeeRect = document.getElementById('coffee-rise');
+                    const newHeight = gameState.progress * maxHeight;
+                    coffeeRect.setAttribute('height', newHeight);
+                    coffeeRect.setAttribute('y', 220 - newHeight);
+                    
+                    updateUI();
+                    
+                    if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+                }
+                
                 lastX = clientX;
-                
-                gameState.progress = Math.min(gameState.progress + (movement / 2500), 1);
-                
-                const maxHeight = 150;
-                const coffeeRect = document.getElementById('coffee-rise');
-                const newHeight = gameState.progress * maxHeight;
-                coffeeRect.setAttribute('height', newHeight);
-                coffeeRect.setAttribute('y', 220 - newHeight);
-                
-                updateUI();
-                
-                if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+                lastY = clientY;
             };
         }
 
@@ -938,21 +915,13 @@
                 }
             }, true);
 
-            // Click fallback for desktop
-            const desktopClickHandler = (e) => {
-                if (deviceOrientationActive) return;
-                handleClick(e);
-            };
-
             // Store handler for cleanup
             level5Handlers = {
-                click: desktopClickHandler,
+                click: null,
                 mouseDown: null,
                 mouseMove: null,
                 mouseUp: null
             };
-
-            document.addEventListener('click', desktopClickHandler);
         }
 
         // Create falling coffee particles
