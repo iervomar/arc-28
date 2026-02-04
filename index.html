@@ -562,9 +562,47 @@
 
             let lastX = 0;
             let shakeCount = 0;
+            let deviceMotionActive = false;
 
-            document.onmousemove = document.ontouchmove = (e) => {
+            // Shake detection for mobile
+            window.addEventListener('devicemotion', (e) => {
                 if (!gameState.canInteract || gameState.isTransitioning) return;
+                
+                deviceMotionActive = true;
+                const acceleration = e.accelerationIncludingGravity;
+                const x = acceleration.x || 0;
+                const y = acceleration.y || 0;
+                const z = acceleration.z || 0;
+                
+                // Calculate magnitude of acceleration
+                const magnitude = Math.sqrt(x * x + y * y + z * z);
+                
+                // Detect shake (threshold around 15-20)
+                if (magnitude > 15) {
+                    shakeCount += (magnitude - 15) / 30;
+                    gameState.progress = Math.min(shakeCount / 100, 1);
+                    
+                    // Rise from bottom
+                    const maxHeight = 60;
+                    const coffeeHeight = gameState.progress * maxHeight;
+                    const coffeeY = 80 - coffeeHeight;
+                    
+                    document.getElementById('coffee').setAttribute('height', coffeeHeight);
+                    document.getElementById('coffee').setAttribute('y', coffeeY);
+                    
+                    if (Math.random() > 0.6) {
+                        createCoffeeParticle();
+                    }
+                    
+                    updateUI();
+                    
+                    if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+                }
+            }, true);
+
+            // Mouse/touch fallback for desktop
+            document.onmousemove = document.ontouchmove = (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning || deviceMotionActive) return;
                 
                 const clientX = e.touches ? e.touches[0].clientX : e.clientX;
                 const movement = Math.abs(clientX - lastX);
@@ -856,7 +894,7 @@
             const handleClick = (e) => {
                 if (!gameState.canInteract || gameState.isTransitioning) return;
                 
-                // Increment progress by 0.12 per click (about 6 clicks to complete)
+                // Increment progress by 0.10 per click (about 10 clicks to complete)
                 gameState.progress = Math.min(gameState.progress + 0.10, 1);
                 
                 const maxHeight = 60;
@@ -870,15 +908,51 @@
                 if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
             };
 
+            let deviceOrientationActive = false;
+            let lastTiltX = 0;
+
+            // Tilt detection for mobile
+            window.addEventListener('deviceorientation', (e) => {
+                if (!gameState.canInteract || gameState.isTransitioning) return;
+                
+                deviceOrientationActive = true;
+                const beta = e.beta || 0; // Rotation around X axis (-180 to 180)
+                const gamma = e.gamma || 0; // Rotation around Y axis (-90 to 90)
+                
+                // Use gamma (left/right tilt) to detect tilt
+                const tiltDelta = Math.abs(gamma - lastTiltX);
+                lastTiltX = gamma;
+                
+                if (tiltDelta > 2) {
+                    gameState.progress = Math.min(gameState.progress + (tiltDelta / 300), 1);
+                    
+                    const maxHeight = 60;
+                    const coffeeRect = document.getElementById('coffee-rise');
+                    const newHeight = gameState.progress * maxHeight;
+                    coffeeRect.setAttribute('height', newHeight);
+                    coffeeRect.setAttribute('y', 150 - newHeight);
+                    
+                    updateUI();
+                    
+                    if (gameState.progress >= 0.95 && !gameState.isTransitioning) completeLevel();
+                }
+            }, true);
+
+            // Click fallback for desktop
+            const desktopClickHandler = (e) => {
+                if (deviceOrientationActive) return;
+                handleClick(e);
+            };
+
             // Store handler for cleanup
             level5Handlers = {
-                click: handleClick,
+                click: desktopClickHandler,
                 mouseDown: null,
                 mouseMove: null,
                 mouseUp: null
             };
 
-            document.addEventListener('click', handleClick);
+            document.addEventListener('click', desktopClickHandler);
         }
 
         // Create falling coffee particles
