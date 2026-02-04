@@ -1023,8 +1023,61 @@
             location.reload();
         }
 
-        // Start the game
-        initGame();
-    </script>
+                // Start the game
+                initGame();
+        </script>
+
+        <script>
+        (function(){
+            const needsRequest = typeof DeviceMotionEvent !== 'undefined' && typeof DeviceMotionEvent.requestPermission === 'function';
+            function createPrompt(){
+                const wrapper = document.createElement('div');
+                wrapper.id = 'motionPermissionPrompt';
+                wrapper.style.position = 'fixed';
+                wrapper.style.left = '0';
+                wrapper.style.top = '0';
+                wrapper.style.right = '0';
+                wrapper.style.bottom = '0';
+                wrapper.style.display = 'flex';
+                wrapper.style.alignItems = 'center';
+                wrapper.style.justifyContent = 'center';
+                wrapper.style.background = 'rgba(0,0,0,0.35)';
+                wrapper.style.zIndex = '9999';
+                wrapper.innerHTML = '<div style="background:#fff;padding:18px;border-radius:10px;text-align:center;max-width:90%;font-family:sans-serif;"><div style="margin-bottom:8px;">Enable Motion Sensors</div><button id="enableMotionBtn" style="padding:8px 14px;border-radius:6px;border:0;background:#6b4f3f;color:#fff;font-weight:600">Enable</button><div style="margin-top:8px;font-size:12px;color:#666">Required on iOS Safari. Tap to grant access.</div></div>';
+                document.body.appendChild(wrapper);
+                document.getElementById('enableMotionBtn').addEventListener('click', function(){
+                    DeviceMotionEvent.requestPermission().then(resp => {
+                        if (resp === 'granted') {
+                            console.log('DeviceMotion permission granted');
+                            wrapper.remove();
+                        } else {
+                            console.log('DeviceMotion permission denied:', resp);
+                        }
+                    }).catch(err=>{
+                        console.log('DeviceMotion request error', err);
+                    });
+                });
+            }
+            if (needsRequest) {
+                // Delay prompt until user interacts once to comply with gesture requirement
+                const onFirstTouch = function(){
+                    document.removeEventListener('touchstart', onFirstTouch);
+                    createPrompt();
+                };
+                document.addEventListener('touchstart', onFirstTouch, {passive:true});
+            }
+
+            // Add lightweight debug listener if not already present
+            if (!window.__devicemotion_registered) {
+                window.addEventListener('devicemotion', function(e){
+                    const a = e.accelerationIncludingGravity || e.acceleration || {};
+                    console.log('devicemotion', a.x, a.y, a.z);
+                }, true);
+                window.__devicemotion_registered = true;
+            }
+
+        })();
+        </script>
+
 </body>
 </html>
